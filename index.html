@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パスワード認証</title>
+    <!-- SHA256ハッシュを計算するためのライブラリを読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .login-box { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 320px; }
+        h2 { margin-top: 0; }
+        p#error-message { color: red; height: 20px; }
+        input[type="password"] { padding: 10px; font-size: 16px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 15px; width: 100%; box-sizing: border-box; }
+        button { padding: 10px 20px; font-size: 16px; border: none; background-color: #007bff; color: white; border-radius: 4px; cursor: pointer; width: 100%; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>限定コンテンツ</h2>
+        <p>パスワードを入力してください</p>
+        <form id="login-form">
+            <input type="password" id="password-input" required autofocus>
+            <button type="submit">認証</button>
+        </form>
+        <p id="error-message"></p>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // フォームの通常の送信を中止
+
+            const password = document.getElementById('password-input').value;
+            const errorMessage = document.getElementById('error-message');
+            
+            // 1. 入力されたパスワードをSHA256でハッシュ化
+            const hash = sha256(password);
+            
+            // 2. ハッシュ値のディレクトリにある動画ページへのパスを作成
+            const path = `./${hash}/videos.html`;
+
+            // 3. そのパスが存在するか確認
+            fetch(path, { method: 'HEAD' }) // HEADリクエストでファイルの存在だけを確認
+                .then(response => {
+                    if (response.ok) {
+                        // 存在すれば、そのページに移動
+                        window.location.href = path;
+                    } else {
+                        // 存在しなければ、エラーメッセージを表示
+                        errorMessage.textContent = 'パスワードが違います。';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorMessage.textContent = '認証中にエラーが発生しました。';
+                });
+        });
+    </script>
+</body>
+</html>
+
